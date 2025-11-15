@@ -1,0 +1,1 @@
+/point_01/checkpoints/stf/checkpoint_016_SOTA.ckpt filter=lfs diff=lfs merge=lfs -text
