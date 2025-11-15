@@ -1,0 +1,9 @@
+_target_: torchvision.transforms.Compose
+transforms:
+  - _target_: framevision.processing.Resize
+    size: ${training.image_size}
+  - _target_: framevision.processing.NormalizeImages
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+  - _target_: framevision.processing.NormalizeJoints2D
+  - _target_: framevision.processing.NormalizeIntrinsics

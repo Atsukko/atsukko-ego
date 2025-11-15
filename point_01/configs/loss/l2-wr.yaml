@@ -1,0 +1,4 @@
+_target_: framevision.loss.L2Loss
+prediction_key: "all_joints_3D"
+target_key: "joints_3D"
+output_key: "l2"

@@ -1,0 +1,24 @@
+_target_: framevision.pl_wrappers.FrameDataModule
+root_dir: ${dataset-path}
+batch_size: ${training.batch_size}
+num_workers: ${training.num_workers}
+
+skip_images: true
+cache_name: motions
+sequence_length: 20
+undersampling_factor: 2
+
+# Split to use for training, validation, and testing
+split:
+  train: "others"
+  val:
+    [
+      "test_actor00_seq1",
+      "test_actor00_seq2",
+      "test_actor01_seq1",
+      "test_actor01_seq2",
+    ]
+split_by: sequences
+
+train_processing: ${processing}
+test_processing: ${processing}

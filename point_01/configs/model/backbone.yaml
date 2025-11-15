@@ -1,0 +1,28 @@
+_target_: framevision.pl_wrappers.FrameModule
+network:
+  _target_: framevision.model.Backbone
+  num_keypoints: ${training.num_keypoints}
+  num_views: 2
+
+  encoder:
+    _target_: framevision.model.encoders.FeatureExtractor
+    name: timm/resnet50.fb_swsl_ig1b_ft_in1k
+    pretrained: True
+    out_indices: [3]
+    num_views: ${model.network.num_views}
+
+  # For the head we pre-initialize the class and give it to the main model, that will then pass the remaining arguments
+  head_class:
+    _target_: framevision.model.heads.Fisheye25DHead
+    _partial_: true
+
+    num_keypoints: ${training.num_keypoints}
+    num_views: ${model.network.num_views}
+    normalization: none
+    activation: relu
+
+loss: ${loss}
+optimizer_class: ${optimizer}
+metric: ${metrics}
+scheduler_config: ${lr_scheduler}
+compiled: True

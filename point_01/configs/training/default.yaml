@@ -1,0 +1,31 @@
+# Generic Training Parameters
+batch_size: 16
+epochs: 10
+num_workers: 16
+
+learning_rate: 4e-5
+weight_decay: 1e-4
+
+image_size: [256, 256]
+num_samples: 681281
+steps_per_epoch: ${eval:${training.num_samples} // ${training.batch_size} + 1}
+
+num_keypoints: 15
+
+# Keyword Arguments for the PyTorch Lightning Trainer
+trainer:
+  max_epochs: ${training.epochs}
+  precision: 16-mixed
+  accumulate_grad_batches: 1
+  val_check_interval: 1.0 
+  gradient_clip_val: 2.0
+  deterministic: true # Set to true to ensure reproducibility
+  benchmark: null # Set to true to enable cudnn benchmarking
+
+  # Debug parameters
+  fast_dev_run: false # Set to N to train N batches
+  limit_train_batches: 1.0 # Set to 0.1 to train on 10% of the data
+  limit_val_batches: 1.0 # Set to 0.1 to validate on 10% of the data
+  overfit_batches: 0.0 # Set to N to train on the same batch N times
+  detect_anomaly: false # Set to true to enable anomaly detection
+

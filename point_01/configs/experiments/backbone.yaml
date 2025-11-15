@@ -1,0 +1,16 @@
+# @package _global_
+defaults:
+  - override /model: backbone
+  - override /loss: l2-cc
+
+experiment-name: backbone
+
+training:
+  learning_rate: 3e-5
+  weight_decay: 1e-5
+  batch_size: 16
+  epochs: 6
+
+lr_scheduler:
+  scheduler:
+    pct_start: 0.1

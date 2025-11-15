@@ -1,0 +1,4 @@
+_target_: torch.optim.AdamW
+_partial_: true
+lr: ${training.learning_rate}
+weight_decay: ${training.weight_decay}

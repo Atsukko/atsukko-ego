@@ -1,0 +1,22 @@
+# @package _global_
+defaults:
+  - override /model: stf
+  - override /dataset: default-cached
+  - override /loss: l2-wr
+  - override /processing: cached
+
+experiment-name: stf
+
+dataset:
+  sequence_length: 20
+  undersampling_factor: 2
+
+training:
+  batch_size: 16
+  learning_rate: 3e-4
+  weight_decay: 1e-4
+  epochs: 4
+
+lr_scheduler:
+  scheduler:
+    pct_start: 0.1

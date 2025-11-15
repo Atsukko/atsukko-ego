@@ -1,0 +1,8 @@
+scheduler:
+  _target_: torch.optim.lr_scheduler.OneCycleLR
+  _partial_: true
+  max_lr: ${training.learning_rate}
+  epochs: ${training.epochs}
+  steps_per_epoch: ${training.steps_per_epoch}
+interval: step
+frequency: 1

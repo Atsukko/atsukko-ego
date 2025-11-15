@@ -1,0 +1,18 @@
+_target_: framevision.pl_wrappers.FrameModule
+network:
+  _target_: framevision.model.STF
+  num_keypoints: ${training.num_keypoints}
+  time_steps: ${dataset.sequence_length}
+  embed_dim: 512
+  num_heads: 32
+  num_layers: 8
+  dropout: 0.1
+  transform_kwargs:
+    align_z_to: x
+
+loss: ${loss}
+optimizer_class: ${optimizer}
+metric: ${metrics}
+scheduler_config: ${lr_scheduler}
+compiled: True
+cache_entry: joints_3D_cc

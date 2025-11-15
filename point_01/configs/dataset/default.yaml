@@ -1,0 +1,43 @@
+_target_: framevision.pl_wrappers.FrameDataModule
+root_dir: ${dataset-path}
+batch_size: ${training.batch_size}
+num_workers: ${training.num_workers}
+
+# Split to use for training, validation, and testing
+split:
+  train: "others"
+  val:
+    [
+      "test_actor00_seq1",
+      "test_actor00_seq2",
+      "test_actor01_seq1",
+      "test_actor01_seq2",
+    ]
+split_by: sequences
+
+train_processing: ${processing}
+test_processing: ${processing}
+# We can split the data by sequences or by actions
+
+# Here is an example of splitting the data by sequences:
+# split:
+#   train: [sequence1, sequence2, sequence3] or "others"
+#   val: [sequence4]
+#   test: [sequence5]
+# split_by: sequences
+
+# Here is an example of splitting the data by actions:
+# split:
+#   train: [action1, action2, action3] or "others"
+#   val: [action4]
+#   test: [action5]
+# split_by: actions
+
+# Here is an example of splitting the data by both sequences and actions:
+# split:
+#   train:
+#     sequence1: [action1, action2]
+#     sequence2: "others"
+#   val:
+#     sequence3: [action5]
+# split_by: both

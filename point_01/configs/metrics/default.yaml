@@ -1,0 +1,4 @@
+_target_: torchmetrics.MetricCollection
+metrics:
+  - _target_: framevision.metrics.DetailedError
+prefix: val/metric/
