@@ -1,0 +1,41 @@
+_target_: framevision.pl_wrappers.FrameDataModule
+root_dir: ${dataset-path}
+batch_size: ${training.batch_size}
+num_workers: ${training.num_workers}
+
+# Split to use for training, validation, and testing
+split:
+  train:
+    [
+      "actor02_seq1",
+      "actor02_seq2",
+      "actor03_seq1",
+      "actor03_seq2",
+      "actor04_seq1",
+      "actor04_seq2",
+      "actor05_seq1",
+      "actor05_seq2",
+      "actor06_seq1",
+      "actor06_seq2",
+      "actor07_seq1",
+      "actor07_seq2",
+      "actor08_seq1",
+      "actor08_seq2",
+      "actor09_seq1",
+      "actor09_seq2",
+      "actor10_seq1",
+      "actor11_seq1",
+      "actor11_seq2",
+    ]
+  val:
+    [
+      "actor00_seq1",
+      "actor00_seq2",
+      "actor00_seq3",
+      "actor01_seq1",
+      "actor01_seq2",
+    ]
+split_by: sequences
+
+train_processing: ${processing}
+test_processing: ${processing}
