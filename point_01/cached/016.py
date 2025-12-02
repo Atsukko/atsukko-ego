@@ -12,7 +12,6 @@ from framevision import geometry as geo
 
 
 class LearnableGraphConv(nn.Module):
-    """修复后的可学习图卷积层"""
 
     def __init__(self, in_features: int, out_features: int, num_joints: int, bias: bool = True):
         super().__init__()
@@ -55,7 +54,6 @@ class LearnableGraphConv(nn.Module):
         return x_output.reshape(B, T, V, J, self.out_features)
 
 class PositionalEncoding(nn.Module):
-    """修复的位置编码，确保维度匹配"""
 
     def __init__(self, max_len: int, embed_dim: int, scale: float = 10000.0, inverted: bool = True):
         super().__init__()
