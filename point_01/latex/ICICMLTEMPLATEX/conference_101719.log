@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2025.2.10)  2 DEC 2025 18:06
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2025.2.10)  13 JAN 2026 23:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -237,11 +237,7 @@ File: l3backend-xetex.def 2024-05-08 L3 backend support: XeTeX
 \g__pdf_backend_annotation_int=\count290
 \g__pdf_backend_link_int=\count291
 )
-(./conference_101719.aux
-
-LaTeX Warning: Label `AA' multiply defined.
-
-)
+(./conference_101719.aux)
 \openout1 = `conference_101719.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 13.
@@ -262,29 +258,13 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 13.
 LaTeX Font Info:    ... okay on input line 13.
 
 -- Lines per column: 56 (exact).
-LaTeX Font Info:    Trying to load font information for U+msa on input line 50.
-
-(c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 50.
+Missing character: There is no – ("2013) in font ptmr8t!
 
 
-(c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    Calculating math sizes for size <11> on input line 50.
 
-Missing character: There is no ​ ("200B) in font ptmr8t!
-Missing character: There is no ​ ("200B) in font ptmr8t!
-
-
-Missing character: There is no ​ ("200B) in font ptmr8t!
-Missing character: There is no ​ ("200B) in font ptmr8t!
-Missing character: There is no ​ ("200B) in font ptmr8t!
-Missing character: There is no ​ ("200B) in font ptmr8t!
-
-LaTeX Warning: Reference `SCM' on page 1 undefined on input line 78.
+Underfull \hbox (badness 3108) in paragraph at lines 65--66
+[]\T1/ptm/m/n/10 Motivated by this in-sight, we build upon a strong
+ []
 
 
 
@@ -292,17 +272,45 @@ LaTeX Warning: Reference `SCM' on page 1 undefined on input line 78.
 
 
 ]
+Underfull \hbox (badness 1424) in paragraph at lines 73--74
+[]\T1/ptm/m/n/10 We pro-pose a Joint-wise Adap-tive Tem-po-ral Smooth-
+ []
 
 
-
-[2]
 
 File: fig1.png Graphic file (type bmp)
 <fig1.png>
 
 
+[2]
+LaTeX Font Info:    Trying to load font information for U+msa on input line 116
+.
+ (c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 116
+.
+
+(c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+
+
+
 [3]
 
+
+Overfull \hbox (8.22896pt too wide) in paragraph at lines 239--249
+ [] 
+ []
+
+
+
+[4]
+
+
+
+[5]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -316,7 +324,11 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-[4] (./conference_101719.aux)
+
+
+[6
+
+] (./conference_101719.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -325,20 +337,14 @@ L3 programming layer <2025-01-18>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
  ) 
 Here is how much of TeX's memory you used:
- 4111 strings out of 473839
- 62541 string characters out of 5733380
- 471440 words of memory out of 5000000
- 27138 multiletter control sequences out of 15000+600000
- 650144 words of font info for 134 fonts, out of 8000000 for 9000
+ 4081 strings out of 473839
+ 62185 string characters out of 5733380
+ 475600 words of memory out of 5000000
+ 27112 multiletter control sequences out of 15000+600000
+ 640780 words of font info for 113 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 57i,14n,65p,1978b,321s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,9n,65p,2004b,298s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on conference_101719.pdf (4 pages).
+Output written on conference_101719.pdf (6 pages).

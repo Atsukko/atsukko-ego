@@ -140,7 +140,6 @@ class EnhancedSpatioTemporalTransformer(nn.Module):
             joints_3D = self.graph_conv(joints_3D)
             joints_3D = self.graph_norm(joints_3D)
             # 残差连接保持原始信息
-            # joints_3D = original_joints + 0.1 * joints_3D  # 小权重融合
             joints_3D = original_joints + self.graph_res_weight * joints_3D
 
         joints_3D_fl_flat = self.flatten(joints_3D)

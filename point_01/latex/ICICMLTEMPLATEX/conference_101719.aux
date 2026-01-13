@@ -1,4 +1,5 @@
 \relax 
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
 \citation{b1}
 \citation{b2}
 \citation{b3}
@@ -13,24 +14,32 @@
 \citation{b12}
 \citation{b13}
 \citation{b14}
-\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Egocentric Body Motion Estimation}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Body Motion Estimation}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {III}Method}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Learnable Graph Convolution Module}{2}{}\protected@file@percent }
+\citation{b1}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Egocentric 3D Human Pose Estimation}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}General 3D Human Pose Estimation}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Method}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Learnable Graph Convolution}{2}{}\protected@file@percent }
 \newlabel{AA}{{\mbox  {III-A}}{2}{}{subsection.3.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Implicit Joint Localization Module}{2}{}\protected@file@percent }
-\newlabel{AA}{{\mbox  {III-B}}{2}{}{subsection.3.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Adaptive Spatio-Temporal Fusion Gate (ASTFG) Module}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Figures and Tables}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {III-D}0a}Positioning Figures and Tables}{3}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Table Type Styles}}{3}{}\protected@file@percent }
-\newlabel{tab1}{{I}{3}{}{table.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Example of a figure caption.}}{3}{}\protected@file@percent }
+\citation{b1}
+\citation{b1}
+\citation{b1}
+\citation{b1}
+\citation{b1}
+\citation{b1}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overview of the proposed model architecture.The pose estimates produced by the backbone network are first processed by the Learnable Graph Convolution (LGC) module to explicitly enhance spatial joint relationships. The resulting features are then fed into the Joint-wise Adaptive Temporal Smoothing (JATS) module, which performs lightweight, joint-level local temporal smoothing to stabilize pose trajectories and improve short-term temporal consistency. The refined features are subsequently passed to the temporal Transformer for global temporal reasoning, producing the final pose sequence.}}{3}{}\protected@file@percent }
 \newlabel{fig}{{1}{3}{}{figure.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Experiments}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Dataset}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Joint-wise Adaptive Temporal Smoothing}{3}{}\protected@file@percent }
+\citation{b1}
+\citation{b1}
+\citation{b1}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparison with representative and recent egocentric 3D human pose estimation methods. The proposed approach achieves improved accuracy across multiple evaluation metrics while maintaining comparable inference efficiency.}}{4}{}\protected@file@percent }
+\newlabel{tab1}{{I}{4}{}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Experiments}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Dataset}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Metrics}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Implementation Details}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Comparison}{4}{}\protected@file@percent }
 \bibcite{b1}{1}
 \bibcite{b2}{2}
 \bibcite{b3}{3}
@@ -43,10 +52,14 @@
 \bibcite{b10}{10}
 \bibcite{b11}{11}
 \bibcite{b12}{12}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Ablation results.We report MPJPE results for the baseline FRAME\cite  {b1} model, LGC represents Learnable Graph Convolution module, TZR-MoE represents Temporal Zero-Mean Residual Mixture-of-Experts.}}{5}{}\protected@file@percent }
+\newlabel{tab2}{{II}{5}{}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Ablation Study}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}Hyperparameter Analysis}{5}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Comparison of different temporal kernel sizes used in the Joint-wise Adaptive Temporal Smoothing (JATS) module.}}{5}{}\protected@file@percent }
+\newlabel{tab_hyper}{{III}{5}{}{table.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusion}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{5}{}\protected@file@percent }
 \bibcite{b13}{13}
 \bibcite{b14}{14}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Metrics}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Implementation Details}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Experimental Results}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{References}{4}{}\protected@file@percent }
-\gdef \@abspage@last{4}
+\gdef \@abspage@last{6}

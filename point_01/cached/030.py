@@ -1,5 +1,4 @@
 from typing import Optional
-
 import math
 import torch
 import torch.nn as nn
@@ -11,8 +10,7 @@ from typing import Optional, Tuple
 from framevision import geometry as geo
 
 
-class LearnableGraphConv(nn.Module):
-    """修复后的可学习图卷积层"""
+class FixedGraphConv(nn.Module):
 
     def __init__(self, in_features: int, out_features: int, num_joints: int, bias: bool = True):
         super().__init__()
@@ -20,18 +18,53 @@ class LearnableGraphConv(nn.Module):
         self.out_features = out_features
         self.num_joints = num_joints
 
-        # 简化权重设计，避免过度参数化
+        # 权重矩阵
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features), dtype=torch.float))
         nn.init.xavier_uniform_(self.W.data, gain=1.414)
 
-        # 可学习的邻接矩阵，使用更合理的初始化
-        self.adj = nn.Parameter(torch.eye(num_joints, dtype=torch.float) * 0.9 +
-                                torch.ones(num_joints, num_joints) * 0.1 / num_joints)
+        # 固定邻接矩阵 - 基于人体结构先验
+        self.register_buffer("adj", self._build_fixed_adjacency_matrix())
 
         if bias:
             self.bias = nn.Parameter(torch.zeros(out_features, dtype=torch.float))
         else:
             self.register_parameter('bias', None)
+
+    def _build_fixed_adjacency_matrix(self) -> Tensor:
+        """基于人体结构先验构建固定邻接矩阵"""
+        adj = torch.zeros(self.num_joints, self.num_joints, dtype=torch.float)
+
+        # 定义人体关节连接关系
+        connections = [
+            # 躯干和四肢的连接
+            (0, 1), (0, 4), (0, 7), (0, 11),  # Neck连接到四肢
+
+            # 左臂连接链
+            (1, 2), (2, 3),  # Neck -> LeftArm -> LeftForeArm -> LeftHand
+
+            # 右臂连接链
+            (4, 5), (5, 6),  # Neck -> RightArm -> RightForeArm -> RightHand
+
+            # 左腿连接链
+            (7, 8), (8, 9), (9, 10),  # Neck -> LeftUpLeg -> LeftLeg -> LeftFoot -> LeftToeBase
+
+            # 右腿连接链
+            (11, 12), (12, 13), (13, 14),  # Neck -> RightUpLeg -> RightLeg -> RightFoot -> RightToeBase
+
+            # 对称连接（可选，增强左右对称性）
+            (1, 4), (7, 11),  # 左右对称关节连接
+        ]
+
+        # 填充邻接矩阵（无向图，所以双向连接）
+        for i, j in connections:
+            adj[i, j] = 1.0
+            adj[j, i] = 1.0
+
+        # 添加自连接
+        for i in range(self.num_joints):
+            adj[i, i] = 1.0
+
+        return adj
 
     def forward(self, input: Tensor) -> Tensor:
         B, T, V, J, C = input.shape
@@ -42,21 +75,24 @@ class LearnableGraphConv(nn.Module):
         # 应用线性变换
         x_transformed = torch.matmul(x, self.W)  # (B*T*V, J, out_features)
 
-        # 对称化邻接矩阵
-        adj = (self.adj + self.adj.T) / 2
-        adj = F.softmax(adj, dim=-1)  # 归一化
+        # 对固定邻接矩阵进行归一化（保持对称性）
+        adj = self.adj.clone()
+        degree = torch.sum(adj, dim=1, keepdim=True)
+        degree_inv_sqrt = torch.pow(degree, -0.5)
+        degree_inv_sqrt[torch.isinf(degree_inv_sqrt)] = 0
+        adj_normalized = degree_inv_sqrt * adj * degree_inv_sqrt.T
 
         # 图卷积操作
-        x_output = torch.matmul(adj, x_transformed)  # (B*T*V, J, out_features)
+        x_output = torch.matmul(adj_normalized, x_transformed)  # (B*T*V, J, out_features)
 
         if self.bias is not None:
             x_output = x_output + self.bias
 
         return x_output.reshape(B, T, V, J, self.out_features)
 
-class PositionalEncoding(nn.Module):
-    """修复的位置编码，确保维度匹配"""
 
+class PositionalEncoding(nn.Module):
+    # 保持不变
     def __init__(self, max_len: int, embed_dim: int, scale: float = 10000.0, inverted: bool = True):
         super().__init__()
         self.max_len = max_len
@@ -74,11 +110,9 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         B, T, C = x.shape
-        # 确保位置编码的维度与输入匹配
         if T <= self.max_len:
             return self.pos_enc[:, :T]
         else:
-            # 如果输入序列更长，进行插值
             pos_enc = F.interpolate(
                 self.pos_enc.transpose(1, 2),
                 size=T,
@@ -108,50 +142,36 @@ class EnhancedSpatioTemporalTransformer(nn.Module):
 
         in_dim = num_views * num_keypoints * 3
 
-        # 图卷积层（可选）
+        # 使用固定图卷积层替换可学习图卷积
         if use_graph_conv:
-            # 图卷积保持3维输出，不改变坐标维度
-            self.graph_conv = LearnableGraphConv(3, 3, num_keypoints)
-            # 在正确维度上应用归一化
-            self.graph_norm = nn.LayerNorm(3)  # 在坐标维度归一化
+            self.graph_conv = FixedGraphConv(3, 3, num_keypoints)
+            self.graph_norm = nn.LayerNorm(3)
 
-        # 保持原始STF的嵌入层
         self.embedding = nn.Linear(in_dim, embed_dim)
-
-        # 位置编码
         self.positional_encoding = PositionalEncoding(time_steps, embed_dim)
 
-        # 保持原始STF的Transformer编码器
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=embed_dim, nhead=num_heads, dropout=dropout, batch_first=True
         )
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
-        # 输出层 - 保持原始设计
         self.output_layer = nn.Linear(embed_dim, in_dim // num_views)
+        self.graph_res_weight = nn.Parameter(torch.tensor(0.1))
 
     def forward(self, joints_3D: Tensor) -> Tensor:
         B, T, V, J, _ = joints_3D.shape
 
-        # 可选：应用图卷积增强空间关系
         if self.use_graph_conv:
             original_joints = joints_3D
             joints_3D = self.graph_conv(joints_3D)
             joints_3D = self.graph_norm(joints_3D)
-            # 残差连接保持原始信息
-            joints_3D = original_joints + 0.1 * joints_3D  # 小权重融合
+            joints_3D = original_joints + self.graph_res_weight * joints_3D
 
         joints_3D_fl_flat = self.flatten(joints_3D)
-
         x = self.embedding(joints_3D_fl_flat)
-
         x = self.positional_encoding(x) + x
-
         x = self.transformer_encoder(x)
-
-        # 输出投影
         x = self.output_layer(x)
-
         return self.unflatten(x)
 
     def flatten(self, joints_3D: Tensor):
@@ -164,7 +184,7 @@ class EnhancedSpatioTemporalTransformer(nn.Module):
 
 
 class STF(nn.Module):
-
+    # 保持不变
     def __init__(
             self,
             num_keypoints: int,
@@ -172,8 +192,8 @@ class STF(nn.Module):
             num_views: int = 2,
             undersampling_factor: int = 1,
             transform_kwargs: Optional[dict] = None,
-            use_graph_conv: bool = False,
-            graph_conv_weight: float = 0.1,  # 控制图卷积影响程度
+            use_graph_conv: bool = True,
+            graph_conv_weight: float = 0.1,
             **kwargs,
     ):
         super().__init__()
@@ -184,7 +204,6 @@ class STF(nn.Module):
         self.transform_kwargs = transform_kwargs if transform_kwargs is not None else {}
         self.graph_conv_weight = graph_conv_weight
 
-        # 使用修复的增强时空Transformer
         self.transformer = EnhancedSpatioTemporalTransformer(
             num_keypoints=num_keypoints,
             num_views=num_views,
@@ -194,18 +213,13 @@ class STF(nn.Module):
         )
 
     def forward(self, joints_3D_cc, left2middle, right2middle, middle2world, **kwargs):
-        # 保持原有的坐标变换流程
         B, T, V, J, _ = joints_3D_cc.shape
 
-        # 计算变换矩阵（保持原有逻辑）
         cams2floor, floor2world = self.compute_transformations(
             left2middle, right2middle, middle2world
         )
 
-        # 坐标变换
         joints_3D = geo.rototranslate(joints_3D_cc, cams2floor)
-
-        # 通过增强的Transformer
         joints_3D_fl = self.transformer(joints_3D)
         joints_3D_wr = geo.rototranslate(joints_3D_fl, floor2world)
 
@@ -214,36 +228,16 @@ class STF(nn.Module):
 
     @torch.autocast("cuda", enabled=False)
     def compute_transformations(self, left2middle, right2middle, middle2world):
-        """
-        Args:
-            left2middle: Transformation matrix from left to middle camera frame. Shape: (B, 4, 4).
-            right2middle: Transformation matrix from right to middle camera frame. Shape: (B, 4, 4).
-            middle2world: Transformation matrix from middle to world frame. Shape: (B, T, 4, 4).
+        cams2middle = torch.stack([left2middle, right2middle], dim=1)
+        middle2world_last = middle2world[:, -1].unsqueeze(1)
+        middle2floor_last = geo.compute_relpose_to_floor(middle2world_last, **self.transform_kwargs)
+        world2floor_last = middle2floor_last @ geo.invert_SE3(middle2world_last)
+        floor_last2world = geo.invert_SE3(world2floor_last)
 
-        Returns:
-            cams2floor_last: Transformation matrix from cameras to the last floor frame. Shape: (B, T, 2, 4, 4).
-            floor_last2world: Transformation matrix from the last floor frame to the world frame. Shape: (B, T, 4, 4).
-        """
-
-        # Computing the transformations from the cameras to the middle frame
-        cams2middle = torch.stack([left2middle, right2middle], dim=1)  # Shape: (B, 2, 4, 4)
-
-        # Compute the transformation from world coordinate to the last floor frame
-        middle2world_last = middle2world[:, -1].unsqueeze(1)  # Shape: (B, 1, 4, 4)
-        middle2floor_last = geo.compute_relpose_to_floor(middle2world_last,
-                                                         **self.transform_kwargs)  # Shape: (B, 1, 4, 4)
-        world2floor_last = middle2floor_last @ geo.invert_SE3(middle2world_last)  # Shape: (B, 1, 4, 4)
-        floor_last2world = geo.invert_SE3(world2floor_last)  # Shape: (B, 1, 4, 4)
-
-        # Unsqueeze approriate dimension to make sure they match
-        cams2middle = cams2middle.unsqueeze(1)  # Shape: (B, 1, 2, 4, 4)
-        middle2world = middle2world.unsqueeze(2)  # Shape: (B, T, 1, 4, 4)
-
-        # Compute the transformation from the cameras to world coordinates
-        cams2world = middle2world @ cams2middle  # Shape: (B, T, 2, 4, 4)
-
-        # Compute the transformation from the cameras to the last floor frame
-        world2floor_last = world2floor_last.unsqueeze(2)  # Shape: (B, 1, 1, 4, 4)
-        cams2floor_last = world2floor_last @ cams2world  # Shape: (B, T, 2, 4, 4)
+        cams2middle = cams2middle.unsqueeze(1)
+        middle2world = middle2world.unsqueeze(2)
+        cams2world = middle2world @ cams2middle
+        world2floor_last = world2floor_last.unsqueeze(2)
+        cams2floor_last = world2floor_last @ cams2world
 
         return cams2floor_last, floor_last2world
