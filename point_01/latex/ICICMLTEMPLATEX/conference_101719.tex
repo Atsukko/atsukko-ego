@@ -8,6 +8,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage[T1]{fontenc}
+\usepackage[numbers,sort&compress]{natbib}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -47,8 +48,9 @@ chenghong76@bupt.edu.cn}
 \maketitle
 
 \begin{abstract}
-Egocentric 3D human pose estimation aims to recover accurate and temporally stable body poses from head-mounted sensors, yet remains challenging due to severe self-occlusion, limited field of view, and rapid motion changes. Although recent methods leverage transformer-based temporal modeling to capture long-range dependencies, they largely rely on implicit learning and often fail to explicitly enforce anatomical joint constraints and joint-wise local temporal consistency inherent in human pose dynamics. In this paper, we propose an enhanced spatiotemporal framework that explicitly strengthens both spatial and temporal representations for egocentric 3D pose estimation. On the spatial side, we introduce a Learnable Graph Convolution (LGC) module that integrates human skeletal anatomical priors with data-driven joint relationships, enabling adaptive modeling of inter-joint dependencies while preserving precise 3D joint coordinates. On the temporal side, we propose a Joint-wise Adaptive Temporal Smoothing (JATS) module that performs lightweight local temporal refinement independently for each joint-coordinate channel through depth-wise temporal filtering and learnable joint-wise and coordinate-aware gating, explicitly enhancing short-term temporal consistency while preserving joint-specific motion patterns. By jointly incorporating these two modules before global temporal reasoning, the proposed framework provides cleaner and more coherent spatiotemporal features for subsequent transformer-based modeling. Extensive experiments on the SELF dataset demonstrate that our approach consistently outperforms multiple competitive methods in terms of MPJPE, PA-MPJPE, and 3D-PCK, while introducing only marginal computational overhead and maintaining real-time inference performance, validating the effectiveness of explicitly disentangling and reinforcing spatial anatomical structure and joint-aware local temporal dynamics for egocentric 3D human pose estimation.
+Egocentric 3D human pose estimation aims to recover accurate and temporally stable body poses from head-mounted sensors, yet remains challenging due to severe self-occlusion, limited field of view, and rapid motion changes. While recent transformer-based methods model long-range temporal dependencies, they often rely on implicit learning and fail to explicitly enforce anatomical structure and joint-wise temporal consistency inherent in human motion. In this paper, we propose an enhanced spatiotemporal framework that explicitly strengthens both spatial and temporal representations for egocentric 3D pose estimation. Spatially, we incorporate a learnable graph-based module to adaptively model inter-joint relationships guided by skeletal priors. Temporally, we introduce a lightweight joint-wise adaptive temporal smoothing module that enhances local temporal consistency while preserving joint-specific temporal pose patterns. By integrating these components prior to global temporal modeling, our framework provides more coherent spatiotemporal features for subsequent transformer-based reasoning. Extensive experiments on the SELF dataset demonstrate that the proposed method consistently outperforms competitive baselines across multiple evaluation metrics, while incurring only marginal computational overhead and maintaining real-time performance.
 \end{abstract}
+
 
 
 \begin{IEEEkeywords}
@@ -56,49 +58,48 @@ Egocentric 3D Pose Estimation, Spatiotemporal Modeling, Graph Convolution, Trans
 \end{IEEEkeywords}
 
 \section{Introduction}
-Egocentric 3D human pose estimation aims to recover full-body 3D poses from head-mounted cameras and sensors, and has recently attracted increasing attention due to its wide applications in virtual reality, augmented reality, and human–computer interaction. By placing sensors on the wearer, egocentric systems enable unconstrained motion capture without relying on external cameras, offering strong practicality in real-world scenarios. However, estimating accurate and temporally stable poses from an egocentric viewpoint remains highly challenging, as large portions of the body are frequently occluded, observations are often incomplete, viewpoints change rapidly with head motion, and pose dynamics can be highly complex.
+Egocentric 3D human pose estimation aims to recover full-body 3D poses from head-mounted cameras and sensors, and has recently attracted increasing attention due to its wide applications in virtual reality, augmented reality, and human-computer interaction\citep{b1,b2,b3,b4,b5,b6,b7,b8,b15}. By placing sensors on the wearer, egocentric systems enable unconstrained motion capture without relying on external cameras, offering strong practicality in real-world scenarios~\citep{b1,b2,b4,b5}. However, estimating accurate and temporally stable poses from an egocentric viewpoint remains highly challenging, as large portions of the body are frequently occluded, observations are often incomplete, viewpoints change rapidly with head motion, and pose dynamics can be highly complex\citep{b1,b4,b5,b6,b7}.
 
-To address these challenges, recent methods have explored transformer-based architectures to model long-range temporal dependencies in pose sequences. Prior work has shown that global temporal attention can effectively capture long-term pose evolution and improve robustness under severe occlusions. Nevertheless, these approaches predominantly rely on implicit learning to capture both spatial joint relationships and temporal dynamics. As a result, explicit anatomical joint constraints and joint-wise local temporal consistency are not directly enforced, which may limit spatial coherence and temporal stability in challenging egocentric scenarios.
+To address these challenges, recent studies have increasingly adopted transformer-based architectures to model long-range temporal dependencies in pose sequences. Prior works demonstrate that global temporal attention can effectively capture long-term pose evolution and improve robustness under occlusion and noisy observations~\citep{b1,b2,b8}. Meanwhile, graph-based modeling has been explored to encode anatomical joint relationships and enhance spatial coherence in general 3D human pose estimation~\citep{b9,b10}. Despite their effectiveness, most existing egocentric approaches primarily rely on implicit learning to capture spatial and temporal dependencies, without explicitly enforcing anatomical structure or joint-wise local temporal consistency. This limitation may lead to spatial incoherence and temporal jitter, particularly in challenging egocentric scenarios with rapid motion and severe self-occlusion.
 
-Egocentric 3D human pose estimation exhibits strong structural regularities in both space and time. Spatially, body joints follow well-defined anatomical connectivity governed by kinematic constraints, where explicitly modeling inter-joint dependencies can significantly improve spatial coherence. Temporally, pose trajectories are locally smooth, while different joints exhibit distinct temporal characteristics: some joints remain relatively stable, whereas others undergo rapid and irregular movements. These observations suggest that explicitly strengthening anatomical joint relationships and enforcing joint-wise local temporal consistency can provide a more reliable foundation for subsequent global temporal reasoning.
+Egocentric 3D human pose sequences, however, exhibit strong structural regularities in both space and time. Spatially, body joints are governed by well-defined anatomical connectivity and kinematic constraints, where explicitly modeling inter-joint relationships can improve spatial consistency~\citep{b9,b10}. Temporally, human pose trajectories are locally smooth, while different joints exhibit distinct temporal characteristics: some joints remain relatively stable, whereas others undergo rapid and irregular pose variations. These observations suggest that explicitly strengthening anatomical joint relations and enforcing joint-wise local temporal consistency can provide a more reliable foundation for subsequent global temporal reasoning.
 
-Motivated by this insight, we build upon a strong transformer-based egocentric pose estimation framework and propose an enhanced spatiotemporal architecture that explicitly reinforces both spatial and temporal representations, while being carefully designed to introduce only minimal additional computational overhead. On the spatial side, we introduce a Learnable Graph Convolution (LGC) module that integrates fixed skeleton-based anatomical priors with a learnable graph structure, allowing the model to balance predefined kinematic relationships and data-driven joint dependencies. On the temporal side, we propose a Joint-wise Adaptive Temporal Smoothing module, which performs lightweight local temporal refinement by applying learnable, joint-specific residual smoothing along the temporal dimension. Instead of relying on heavy temporal modeling, this module explicitly enforces short-term temporal consistency while preserving joint-specific motion patterns, providing cleaner and more stable temporal features before global transformer-based temporal modeling.
-
-Extensive experiments on the SELF dataset demonstrate that the proposed framework consistently outperforms multiple existing methods across standard evaluation metrics, including MPJPE, PA-MPJPE, and 3D-PCK, while maintaining real-time inference efficiency. Comprehensive ablation studies further validate the complementary roles of the proposed spatial and temporal components, highlighting the effectiveness of explicitly disentangling and strengthening spatial structure and joint-aware local temporal modeling.
+Motivated by this insight, we build upon a strong transformer-based egocentric pose estimation framework and propose an enhanced spatiotemporal architecture that explicitly reinforces both spatial and temporal representations, while introducing only minimal additional computational overhead. Specifically, we incorporate a Learnable Graph Convolution (LGC) module to integrate skeletal priors with learnable joint dependencies, and a Joint-wise Adaptive Temporal Smoothing (JATS) module to perform lightweight joint-specific local temporal refinement prior to global temporal modeling. Extensive experiments on the SELF dataset demonstrate that the proposed framework consistently outperforms existing methods across multiple evaluation metrics, while maintaining real-time inference efficiency. Comprehensive ablation studies further validate the complementary effects of the proposed spatial and temporal components.
 
 In summary, our main contributions are threefold:
+\begin{itemize}
+    \item We introduce a Learnable Graph Convolution (LGC) module that explicitly enhances spatial joint relationships by integrating anatomical priors with data-driven graph learning.
+    \item We propose a Joint-wise Adaptive Temporal Smoothing (JATS) module that strengthens joint-wise local temporal consistency through lightweight residual refinement.
+    \item We achieve competitive performance on egocentric 3D human pose estimation benchmarks with an efficient and unified spatiotemporal framework.
+\end{itemize}
 
-We introduce a Learnable Graph Convolution (LGC) module that explicitly enhances spatial joint relationships by integrating anatomical priors with data-driven graph learning.
-
-We propose a Joint-wise Adaptive Temporal Smoothing(JATS) module that strengthens local temporal consistency through learnable, joint-specific residual refinement, serving as a lightweight temporal enhancement prior to transformer-based reasoning.
-
-We achieve competitive performance on egocentric 3D human pose estimation benchmarks compared with multiple existing methods, using an efficient and unified spatiotemporal framework.
 
 \section{Related Work}
 
-\subsection{Egocentric 3D Human Pose Estimation}
-Recent research on egocentric 3D human pose estimation has achieved remarkable progress in both accuracy and efficiency. FRAME~\cite{b1} leverages geometric multimodal integration and floor-aligned representations to achieve state-of-the-art performance with real-time inference. REWIND~\cite{b2} employs cascaded diffusion-based denoising and identity-conditioned refinement to enable high-fidelity whole-body pose estimation in real time. Wang et al.~\cite{b3} introduce FisheyeViT combined with diffusion-based motion refinement to obtain temporally stable pose estimates from a single head-mounted fisheye camera.
-
-Beyond vision-only approaches, multimodal systems have also been explored. Dai et al.~\cite{b4} propose the SLOPER4D dataset by integrating LiDAR and IMUs, facilitating global 4D human pose estimation in large-scale outdoor environments. Wang et al.~\cite{b5} adopt a spatio-temporal optimization framework with learned motion priors to reduce temporal jitter and address occlusions in global-coordinate egocentric pose estimation. Akada et al.~\cite{b6} introduce the UnrealEgo dataset and a multi-branch autoencoder architecture for stereo egocentric pose estimation, explicitly addressing self-occlusion via heatmap-driven modeling. Building upon this, Akada et al.~\cite{b7} further propose a transformer-based framework that integrates scene depth features and temporal query augmentation, along with the UnrealEgo2 dataset, to improve robustness in dynamic environments. EgoPoseFormer~\cite{b8} presents a two-stage transformer-based framework with pose proposal and deformable stereo attention for accurate stereo egocentric 3D pose refinement.
-
-Despite these advances, most existing egocentric approaches primarily rely on global temporal modeling or implicit learning of joint relationships, while explicit modeling of anatomical structure and local temporal consistency remains limited.
-
 \subsection{General 3D Human Pose Estimation}
-General 3D human pose estimation aims to recover 3D joint coordinates from monocular or multi-view images and videos, and has been extensively studied. KTPFormer~\cite{b9} introduces a transformer enhanced with kinematic and trajectory priors, employing graph convolution to enforce anatomical constraints and temporal coherence. MotionAGFormer~\cite{b10} proposes an adaptive graph attention transformer that dynamically learns joint dependencies through multi-scale graph convolutions and temporal attention. TCPFormer~\cite{b11} presents a temporal correlation learning framework using implicit pose proxies to facilitate comprehensive sequence-level temporal modeling.
+General 3D human pose estimation aims to recover 3D joint coordinates from monocular or multi-view images and videos, and has been extensively studied. Recent works have increasingly emphasized the explicit modeling of anatomical structure and temporal dynamics. KTPFormer~\cite{b9} introduces kinematic and trajectory priors into a transformer framework, employing graph convolution to enforce skeletal constraints and temporal coherence. MotionAGFormer~\cite{b10} proposes an adaptive graph attention transformer that dynamically learns joint dependencies through multi-scale graph convolutions and temporal attention. TCPFormer~\cite{b11} presents a temporal correlation learning framework using implicit pose proxies to enhance sequence-level temporal modeling.
 
-Other works explore alternative architectures for structural and temporal modeling. GraphMLP~\cite{b12} combines multi-layer perceptrons with graph convolution to capture global and local joint interactions efficiently. Cheng et al.~\cite{b13} employ temporal convolutional networks together with a Cylinder Man Model to explicitly handle occlusions and enforce temporal smoothness in video-based pose estimation. PyMAF-X~\cite{b14} extends parametric human mesh recovery by incorporating pyramidal mesh alignment feedback and adaptive integration strategies for full-body regression from monocular images.
+Other approaches explore alternative architectural designs for efficient structural and temporal reasoning. GraphMLP~\cite{b12} combines graph convolution with multi-layer perceptrons to capture both global and local joint interactions. Cheng et al.~\cite{b13} employ temporal convolutional networks together with a Cylinder Man Model to explicitly handle occlusions and enforce temporal smoothness. PyMAF-X~\cite{b14} extends parametric human mesh recovery by incorporating pyramidal mesh alignment feedback for full-body regression.
 
-While these methods demonstrate the effectiveness of graph-based modeling and temporal reasoning, they are primarily designed for third-person settings and often rely on heavy temporal architectures. In contrast, our work focuses on egocentric scenarios and emphasizes explicitly strengthening spatial anatomical relations and joint-adaptive local temporal consistency as a lightweight and complementary enhancement to transformer-based temporal modeling.
+While these methods demonstrate the effectiveness of graph-based modeling and temporal reasoning, they are primarily designed for third-person settings and often rely on heavy temporal architectures, which may be suboptimal for egocentric scenarios with strict efficiency constraints.
+
+\subsection{Egocentric 3D Human Pose Estimation}
+Egocentric 3D human pose estimation aims to recover full-body poses from head-mounted sensors under severe self-occlusion, limited field of view, and rapid motion changes. FRAME~\cite{b1} leverages geometric representations together with transformer-based temporal modeling to achieve real-time egocentric pose estimation. REWIND~\cite{b2} introduces cascaded diffusion-based denoising with identity-conditioned refinement to improve pose fidelity and temporal stability. Wang et al.~\cite{b3} further enhance egocentric pose estimation by incorporating motion refinement strategies to stabilize pose sequences captured by head-mounted cameras. Dai et al.~\cite{b4} present the SLOPER4D dataset and a large-scale egocentric pose estimation framework, while Wang et al.~\cite{b5} employ spatio-temporal optimization with learned motion priors to reduce temporal jitter. Akada et al.~\cite{b6,b7} propose egocentric datasets and transformer-based architectures that exploit depth and temporal cues to address self-occlusion, and EgoPoseFormer~\cite{b8} presents a two-stage transformer framework with pose proposals and deformable attention for egocentric pose refinement.
+
+Despite the progress achieved by these methods, most existing approaches primarily focus on global temporal modeling or sequence-level refinement, while explicit modeling of anatomical structure and joint-wise local temporal consistency remains limited. In contrast, our work explicitly strengthens spatial anatomical relations and joint-adaptive local temporal consistency as lightweight inductive biases prior to global temporal modeling, providing a complementary and efficient enhancement for egocentric 3D human pose estimation.
+
+
 
 
 \begin{figure*}[htbp]
 \centerline{\includegraphics[width=1\textwidth]{fig1.png}}
-\caption{Overview of the proposed model architecture.The pose estimates produced by the backbone network are first processed by the Learnable Graph Convolution (LGC) module to explicitly enhance spatial joint relationships. The resulting features are then fed into the Joint-wise Adaptive Temporal Smoothing (JATS) module, which performs lightweight, joint-level local temporal smoothing to stabilize pose trajectories and improve short-term temporal consistency. The refined features are subsequently passed to the temporal Transformer for global temporal reasoning, producing the final pose sequence.}
+\caption{Overview of the proposed model architecture. The pose estimates produced by the backbone network are first processed by the Learnable Graph Convolution (LGC) module to explicitly enhance spatial joint relationships. The resulting features are then fed into the Joint-wise Adaptive Temporal Smoothing (JATS) module, which performs lightweight, joint-level local temporal smoothing to stabilize pose trajectories and improve short-term temporal consistency. The refined features are subsequently passed to the temporal Transformer for global temporal reasoning, producing the final pose sequence.}
 \label{fig}
 \end{figure*}
 
 \section{Method}
-Our approach is built upon the FRAME~\cite{b1} architecture. We retain its backbone network for feature extraction and 3D joint coordinate regression, as well as the original transformer encoder for global temporal modeling. To explicitly enhance spatial structure and local temporal consistency prior to transformer-based reasoning, we insert two lightweight modules before the transformer encoder: a Learnable Graph Convolution (LGC) module for spatial refinement, followed by a Joint-wise Adaptive Temporal Smoothing (JATS) module for local temporal enhancement.
+Our approach is built upon the FRAME~\cite{b1} architecture. We retain its backbone network for feature extraction and 3D joint coordinate regression, as well as the original Transformer encoder for global temporal modeling. To explicitly enhance spatial structure and local temporal consistency prior to transformer-based reasoning, we insert two lightweight modules before the Transformer encoder: a Learnable Graph Convolution (LGC) module for spatial refinement, followed by a Joint-wise Adaptive Temporal Smoothing (JATS) module for local temporal enhancement.
+
 
 
 
@@ -111,38 +112,22 @@ Our approach is built upon the FRAME~\cite{b1} architecture. We retain its backb
 
 
 \subsection{Learnable Graph Convolution}\label{AA}
-To explicitly model structured spatial relationships among human body joints, we introduce a Learnable Graph Convolution (LGC) module as a spatial refinement stage prior to temporal modeling. The LGC module enhances joint representations by integrating anatomical priors with data-driven joint dependencies, while preserving the original 3D coordinate information through a residual design.
+To explicitly model structured spatial relationships among human body joints, we introduce a Learnable Graph Convolution (LGC) module as a spatial refinement stage prior to temporal modeling. The LGC module enhances joint representations by incorporating anatomical priors while allowing flexible, data-driven modeling of inter-joint dependencies. Through a lightweight residual design, it strengthens spatial coherence without altering the original 3D coordinate representation or introducing significant computational overhead.
 
-Given input joint features $\mathbf{X} \in \mathbb{R}^{B \times T \times V \times J \times 3}$, where $B$ denotes the batch size, $T$ the temporal length, $V$ the number of views, and $J$ the number of joints, the input is first reshaped into a graph-compatible format $\mathbf{X}_g \in \mathbb{R}^{(B \cdot T \cdot V) \times J \times 3}$.
-
-The core of the LGC module is a hybrid adjacency matrix that combines fixed anatomical connectivity with a learnable joint relationship matrix. Specifically, a fixed adjacency matrix $\mathbf{A}_1 \in \mathbb{R}^{J \times J}$ is constructed based on the kinematic tree of the human skeleton. For a set of $J=15$ joints, undirected edges are defined according to physical joint connections, and self-loops are explicitly included:
+Given input joint features $\mathbf{X} \in \mathbb{R}^{B \times T \times V \times J \times 3}$, where $B$ denotes the batch size, $T$ the temporal length, $V$ the number of views, and $J$ the number of joints, the input is reshaped into a graph-compatible representation $\mathbf{X}_g \in \mathbb{R}^{(B \cdot T \cdot V) \times J \times 3}$. The core of the LGC module is a hybrid adjacency matrix that combines fixed anatomical connectivity and a learnable joint relationship matrix. Specifically, a fixed adjacency matrix $\mathbf{A}_1 \in \mathbb{R}^{J \times J}$ is constructed based on the human skeletal kinematic tree, including self-loops and physically connected joint pairs, while a learnable adjacency matrix $\mathbf{A}_2 \in \mathbb{R}^{J \times J}$ is initialized uniformly and optimized during training. The final adjacency matrix is obtained via a learnable convex combination,
 \begin{equation}
-\mathbf{A}_1[i,j] = \mathbf{A}_1[j,i] =
-\begin{cases}
-1, & \text{if } (i,j) \in \varepsilon \text{ or } i=j, \\
-0, & \text{otherwise},
-\end{cases}
+\tilde{\mathbf{A}} = (1 - \sigma(\alpha)) \mathbf{A}_1 + \sigma(\alpha) \mathbf{A}_2,
 \end{equation}
-where $\varepsilon$ denotes the set of physically connected joint pairs.
-
-To allow flexible modeling beyond predefined anatomy, we introduce a learnable adjacency matrix $\mathbf{A}_2 \in \mathbb{R}^{J \times J}$, initialized as a uniform matrix with values $1/J$ and optimized during training. The final adjacency matrix is obtained via a learnable convex combination:
-\begin{equation}
-\tilde{\mathbf{A}} = (1 - \sigma\left(\alpha\right))\mathbf{A}_1 + \sigma\left(\alpha\right)\mathbf{A}_2,
-\end{equation}
-where $\alpha \in \mathbb{R}$ is a learnable scalar and $\sigma(\cdot)$ denotes the sigmoid function. The combined matrix $\tilde{\mathbf{A}}$ is further normalized to obtain the final propagation matrix $\mathbf{A}$.
-
-Graph convolution is then performed as:
+where $\alpha$ is a learnable scalar and $\sigma(\cdot)$ denotes the sigmoid function. After normalization, graph convolution is performed as
 \begin{equation}
 \mathbf{Y} = \mathbf{A} \mathbf{X}_g \mathbf{W},
 \end{equation}
-where $\mathbf{W} \in \mathbb{R}^{3 \times 3}$ is a learnable weight matrix. In this work, we employ a single graph convolution layer for spatial refinement. The output $\mathbf{Y} \in \mathbb{R}^{(B \cdot T \cdot V) \times J \times 3}$ is reshaped back to $\mathbb{R}^{B \times T \times V \times J \times 3}$.
-
-To preserve precise joint coordinates,The LGC module is integrated into the network through a residual design to preserve precise 3D joint coordinates:
- 
+where $\mathbf{W}$ is a learnable weight matrix. In this work, a single graph convolution layer is employed for spatial refinement. The output is reshaped back to $\mathbb{R}^{B \times T \times V \times J \times 3}$ and integrated via a residual formulation,
 \begin{equation}
-\mathbf{X}_{enhanced} = \mathbf{X}_{in} + \lambda \cdot LayerNorm\left(\mathbf{Y}\right),
+\mathbf{X}_{\text{enhanced}} = \mathbf{X}_{\text{in}} + \lambda \cdot \text{LayerNorm}(\mathbf{Y}),
 \end{equation}
-where $\lambda$ is a learnable scalar parameter and LayerNorm is applied along the coordinate dimension. The enhanced features $\mathbf{X}_{enhanced}$ are subsequently passed to the proposed Joint-wise Adaptive Temporal Smoothing (JATS) module. By strengthening spatial joint interactions prior to joint-adaptive temporal refinement, this design establishes a robust spatial foundation for effective global temporal reasoning.
+where $\lambda$ is a learnable scalar, and LayerNorm is applied along the coordinate dimension. The enhanced features are then passed to the proposed JATS module, providing a spatially coherent foundation for subsequent temporal modeling.
+
 
 
 
@@ -158,13 +143,13 @@ where $\lambda$ is a learnable scalar parameter and LayerNorm is applied along t
 \begin{center}
 \begin{tabular}{c c c c c}
 \hline
-{Method}& {\textit{Inferrence(ms,$\downarrow$)}}& {\textit{MPJPE(mm,$\downarrow$)}}& {\textit{PA-MPJPE(mm,$\downarrow$)}}& {\textit{3D-PCK(\%,$\uparrow$)}}\\
+{Method}& {\textit{Inference(ms,$\downarrow$)}}& {\textit{MPJPE(mm,$\downarrow$)}}& {\textit{PA-MPJPE(mm,$\downarrow$)}}& {\textit{3D-PCK(\%,$\uparrow$)}}\\
 \hline 
-{EgoPW\cite{b1}} & {\textit{6.91}}& {\textit{125.63}}& {\textit{76.55}}& {\textit{60.84}} \\
-{Egoglass\cite{b1}} & {\textit{8.52}}& {\textit{122.33}}& {\textit{72.05}}& {\textit{63.20}} \\
-{UnrealEgo\cite{b1}} & {\textit{7.42}}& {\textit{112.46}}& {\textit{69.87}}& {\textit{59.31}} \\
-{EgoPoseFormer\cite{b1}} & {\textit{13.32}}& {\textit{70.15}}& {\textit{43.96}}& {\textit{75.05}} \\
-{EgoWholeMocap\cite{b1}} & {\textit{15.25}}& {\textit{66.82}}& {\textit{38.16}}& {\textit{79.63}} \\
+{EgoPW\cite{b5}} & {\textit{6.91}}& {\textit{125.63}}& {\textit{76.55}}& {\textit{60.84}} \\
+{Egoglass\cite{b15}} & {\textit{8.52}}& {\textit{122.33}}& {\textit{72.05}}& {\textit{63.20}} \\
+{UnrealEgo\cite{b6}} & {\textit{7.42}}& {\textit{112.46}}& {\textit{69.87}}& {\textit{59.31}} \\
+{EgoPoseFormer\cite{b8}} & {\textit{13.32}}& {\textit{70.15}}& {\textit{43.96}}& {\textit{75.05}} \\
+{EgoWholeMocap\cite{b3}} & {\textit{15.25}}& {\textit{66.82}}& {\textit{38.16}}& {\textit{79.63}} \\
 {FRAME\cite{b1}} & \textbf{\textit{2.51}}& {\textit{48.28}}& {\textit{36.80}}& {\textit{92.80}} \\
 \textbf{Ours} & \textit{2.60}& \textbf{\textit{47.75}}& \textbf{\textit{35.58}}& \textbf{\textit{92.94}} \\
 \hline
@@ -185,18 +170,14 @@ where $\lambda$ is a learnable scalar parameter and LayerNorm is applied along t
 
 
 \subsection{Joint-wise Adaptive Temporal Smoothing}
+To enhance temporal consistency while preserving joint-specific temporal characteristics, we introduce a Joint-wise Adaptive Temporal Smoothing (JATS) module prior to the Transformer encoder. Unlike heavy temporal modeling strategies, JATS explicitly enforces short-term temporal coherence through lightweight, joint-adaptive local refinement, serving as an effective pre-processing stage before global temporal attention.
 
-To enhance temporal consistency while preserving joint-specific motion characteristics, we introduce a Joint-wise Adaptive Temporal Smoothing (JATS) module prior to the Transformer encoder. This module explicitly enforces short-term temporal coherence while allowing different joints to retain distinct motion dynamics.Specifically, the proposed JATS module operates independently on each joint and its corresponding 3D coordinate channels, enabling fine-grained temporal refinement at the joint level while preserving coordinate-specific motion patterns.
 
-Given a 3D joint sequence $\mathbf X \in \mathbb{R}^{B \times T \times V \times J \times 3}$, the input features are rearranged along the temporal dimension and reshaped into a channel-first representation, $\mathbf X' \in \mathbb{R}^{B \times C \times T}$ where $\quad C = V \cdot J \cdot 3$.
-
-We then apply a lightweight depth-wise temporal convolution along the temporal axis, where each joint-coordinate channel is processed independently. This design enables efficient local temporal filtering without introducing cross-joint interference, making the module suitable as a pre-processing step before global temporal modeling.
-
-To adaptively control the strength of temporal smoothing for different joints, we introduce a learnable joint-wise and coordinate-aware gating mechanism. The temporally refined features are combined with the original input through a residual formulation:
+Given a 3D joint sequence $\mathbf{X} \in \mathbb{R}^{B \times T \times V \times J \times 3}$, the input is first rearranged along the temporal dimension and reshaped into a channel-first representation $\mathbf{X}' \in \mathbb{R}^{B \times C \times T}$, where $C = V \cdot J \cdot 3$. A depth-wise temporal convolution is then applied along the temporal axis, such that each joint-coordinate channel is processed independently, enabling efficient local temporal filtering without cross-joint interference. To adaptively control the smoothing strength for different joints and coordinates, a learnable joint-wise and coordinate-aware gating mechanism is introduced, and the refined features are combined with the original input via a residual formulation,
 \begin{equation}
-\mathbf X_{\text{out}} = \mathbf X' + \Gamma \odot Conv\left(\mathbf X'\right),
+\mathbf{X}_{\text{out}} = \mathbf{X}' + \Gamma \odot \text{Conv}(\mathbf{X}'),
 \end{equation}
-where $\Gamma \in \mathbb{R}^{1 \times C \times 1}$ denotes a set of learnable joint-wise and coordinate-aware gates, and $\odot$ represents element-wise multiplication.
+where $\Gamma \in \mathbb{R}^{1 \times C \times 1}$ denotes learnable gates and $\odot$ represents element-wise multiplication. This design allows more stable joints to benefit from stronger smoothing while preserving high-frequency variations for highly dynamic joints. Finally, the gated features are reshaped back to the original spatiotemporal format and fed into the embedding layer and Transformer encoder. The proposed JATS module introduces minimal computational overhead while providing an explicit inductive bias for modeling heterogeneous joint dynamics.
 
 Each gate corresponds to a specific joint-coordinate channel, allowing the model to adaptively balance between raw joint trajectories and temporally smoothed signals. More stable joints tend to benefit from stronger smoothing, while highly dynamic joints preserve higher-frequency motion patterns. This adaptive mechanism is fully differentiable and optimized end-to-end with the overall network.
 
@@ -214,7 +195,7 @@ The dataset provides stereo egocentric videos, 6D device poses, markerless full-
 
 
 \subsection{Metrics}
-Following prior works, we evaluate all methods using the mean per-joint position error (MPJPE) in millimeters. In addition, we report Procrustes-aligned MPJPE (PA-MPJPE) to assess structural alignment accuracy, and the 3D percentage of correct keypoints (3D-PCK) measured within a 10 cm distance threshold.
+Following prior works, we evaluate all methods using the mean per-joint position error (MPJPE) in millimeters. In addition, we report Procrustes-aligned MPJPE (PA-MPJPE) to assess structural alignment accuracy, and the 3D percentage of correct keypoints (3D-PCK) measured within a 10 cm distance threshold. These metrics are widely adopted in egocentric pose estimation benchmarks and reflect both positional accuracy and structural consistency, which are closely related to temporal stability in sequential predictions.
 
 
 \subsection{Implementation Details}
@@ -224,7 +205,7 @@ All models are trained using the AdamW optimizer with a batch size of 16. During
 \subsection{Comparison}
 We compare the proposed method with multiple representative egocentric 3D human pose estimation approaches, including the baseline FRAME~\cite{b1} and several prior works, under the same evaluation protocol. All methods are evaluated locally using their officially released pretrained models in a unified testing environment to ensure a fair comparison.
 
-As shown in Table~\ref{tab1}, the proposed method consistently achieves superior or competitive accuracy compared with existing approaches. In particular, our method demonstrates clear improvements over the baseline and prior methods, indicating more accurate and stable 3D pose estimation under challenging egocentric conditions. These results suggest that explicitly strengthening spatial joint relationships and joint-aware local temporal modeling effectively enhances pose estimation performance.
+As shown in Table~\ref{tab1}, the proposed method consistently achieves superior or competitive accuracy compared with existing approaches. In particular, our method demonstrates clear improvements over the baseline and prior methods, indicating more accurate and temporally stable 3D pose estimation under challenging egocentric conditions. These results suggest that explicitly strengthening spatial joint relationships and joint-aware local temporal modeling effectively enhances pose estimation performance.
 
 In terms of efficiency, the proposed framework maintains inference latency comparable to the baseline model, incurring only marginal additional computational overhead. Despite introducing extra spatial and temporal refinement modules, the overall runtime remains within the real-time range, demonstrating that the proposed design is lightweight and practical for deployment.
 
@@ -234,22 +215,26 @@ Overall, the comparison results show that the proposed method achieves a favorab
 
 \subsection{Ablation Study}
 \begin{table}[htbp]
-\caption{Ablation results.We report MPJPE results for the baseline FRAME\cite{b1} model, LGC represents Learnable Graph Convolution module, TZR-MoE represents Temporal Zero-Mean Residual Mixture-of-Experts.}
+\caption{Ablation study of the proposed spatial and temporal modules. We report MPJPE, PA-MPJPE, and 3D-PCK for the baseline FRAME~\cite{b1} model, the model with Learnable Graph Convolution (LGC), and the full model with both LGC and Joint-wise Adaptive Temporal Smoothing (JATS).}
 \begin{center}
 \begin{tabular}{c c c c}
 \hline
 {Method}& {\textit{MPJPE(mm,$\downarrow$)}}& {\textit{PA-MPJPE(mm,$\downarrow$)}}& {\textit{3D-PCK(\%,$\uparrow$)}}\\
 \hline 
-{Baseline}& {\textit{48.28}}& {\textit{36.80}}& {\textit{92.80}}\\
-{LGC}& {\textit{47.84}}& {\textit{35.63}}& \textbf{\textit{92.98}} \\
-{LGC+JATS(Ours)}& \textbf{\textit{47.75}}& \textbf{\textit{35.58}}& {\textit{92.94}} \\
+{Baseline} & {48.28} & {36.80} & {92.80} \\
+{LGC} & {47.84} & {35.63} & \textbf{92.98} \\
+{LGC+JATS (Ours)} & \textbf{47.75} & \textbf{35.58} & {92.94} \\
 \hline
 \end{tabular}
 \label{tab2}
 \end{center}
 \end{table}
 
-As shown in Table~\ref{tab2}, the ablation study validates the complementary contributions of the proposed components within a unified spatiotemporal framework. Starting from the baseline model, introducing the Learnable Graph Convolution (LGC) module consistently reduces MPJPE by explicitly enhancing spatial consistency among body joints through structured relational modeling. Further incorporating the proposed Joint-wise Adaptive Temporal Smoothing (JATS) module yields additional performance improvements, indicating that adaptive, joint-level local temporal smoothing prior to global temporal attention is beneficial for stabilizing egocentric pose sequences. These results demonstrate that the proposed spatial and temporal modules are complementary and jointly strengthen spatiotemporal representations, leading to more accurate and temporally coherent 3D pose predictions.Notably, all ablation variants introduce only minimal architectural changes, resulting in negligible differences in inference latency.
+
+As shown in Table~\ref{tab2}, introducing the Learnable Graph Convolution (LGC) module consistently improves performance over the baseline model. By explicitly modeling anatomical joint relationships, LGC enhances spatial coherence among body joints, leading to reduced MPJPE and PA-MPJPE, as well as improved 3D-PCK. These results demonstrate the effectiveness of strengthening spatial structure through structured joint interactions in egocentric pose estimation.
+
+Further incorporating the proposed Joint-wise Adaptive Temporal Smoothing (JATS) module yields additional performance gains. The improvement indicates that enforcing joint-adaptive local temporal consistency prior to global temporal modeling helps stabilize pose trajectories and complements the spatial refinement provided by LGC. Together, the two modules form a unified spatiotemporal enhancement that improves both accuracy and temporal coherence.
+
 
 \subsection{Hyperparameter Analysis}
 
@@ -263,7 +248,7 @@ As shown in Table~\ref{tab2}, the ablation study validates the complementary con
 {1} & {48.50} & {35.93} & {92.79} \\
 {2} & {48.31} & {35.94} & {92.72} \\
 {3} & \textbf{47.75} & \textbf{35.58} & \textbf{92.94} \\
-{4} & {50.34} & {36.72} & {92.61} \\
+{4} & {49.78} & {37.33} & {92.20} \\
 {5} & {48.69} & {35.66} & {92.86} \\
 \hline
 \end{tabular}
@@ -279,7 +264,8 @@ As shown in Table~\ref{tab_hyper}, we compare different temporal kernel sizes fo
 
 
 \section{Conclusion}
-In this paper, we presented an enhanced spatiotemporal framework for egocentric 3D human pose estimation. By explicitly strengthening spatial and temporal representations, our approach effectively addresses key challenges in egocentric settings, such as severe self-occlusion and complex pose dynamics. Specifically, we introduced a Learnable Graph Convolution module that integrates anatomical priors with data-driven graph learning to refine spatial joint relationships while preserving precise 3D coordinates. In addition, we proposed a Joint-wise Adaptive Temporal Smoothing module that performs lightweight, joint-level temporal refinement prior to transformer-based global temporal reasoning.Extensive experiments and ablation studies demonstrate that each component contributes positively, enabling the full model to consistently outperform multiple existing methods across standard evaluation metrics. Importantly, the proposed spatial and temporal enhancements introduce only marginal computational overhead, resulting in negligible impact on inference latency and preserving real-time performance. Overall, this work highlights the importance of explicitly disentangling and reinforcing spatial and local temporal modeling in egocentric 3D human pose estimation, and provides an effective and efficient extension to transformer-based frameworks.
+In this paper, we propose a lightweight spatiotemporal enhancement framework for egocentric 3D human pose estimation. Built upon the FRAME architecture, our method explicitly strengthens spatial structure and local temporal consistency prior to transformer-based global temporal modeling. Specifically, we introduce a Learnable Graph Convolution module that integrates anatomical priors with data-driven graph learning to refine spatial joint relationships while preserving precise 3D coordinates, and a Joint-wise Adaptive Temporal Smoothing module that performs joint-level local temporal refinement to stabilize pose sequences. Extensive experiments and ablation studies demonstrate that both components contribute consistently to performance improvements and that their combination yields complementary benefits. Importantly, the proposed enhancements introduce only marginal computational overhead, maintaining real-time inference performance. Overall, this work highlights the effectiveness of explicitly reinforcing spatial and local temporal modeling as a practical extension to transformer-based frameworks for egocentric 3D human pose estimation.
+
 
 
 
@@ -304,6 +290,7 @@ In this paper, we presented an enhanced spatiotemporal framework for egocentric 
 \bibitem{b12} Li W, Liu M, Liu H, et al. GraphMLP: A graph MLP-like architecture for 3D human pose estimation[J]. Pattern Recognition, 2025, 158: 110925.
 \bibitem{b13} Cheng Y, Yang B, Wang B, et al. Occlusion-aware networks for 3d human pose estimation in video[C]//Proceedings of the IEEE/CVF international conference on computer vision. 2019: 723-732.
 \bibitem{b14} Zhang H, Tian Y, Zhang Y, et al. Pymaf-x: Towards well-aligned full-body model regression from monocular images[J]. IEEE Transactions on Pattern Analysis and Machine Intelligence, 2023, 45(10): 12287-12303.
+\bibitem{b15} D. Zhao, Z. Wei, J. Mahmud, and J.-M. Frahm, “EgoGlass: Egocentric-View Human Pose Estimation From an Eyeglass Frame,” in 2021 International Conference on 3D Vision (3DV), Feb. 2021, pp. 32–41. doi: 10.1109/3DV53792.2021.00014.
 
 \end{thebibliography}
 \end{document}

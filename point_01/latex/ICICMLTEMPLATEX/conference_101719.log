@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2025.2.10)  13 JAN 2026 23:44
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2025.2.10)  18 JAN 2026 16:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -230,77 +230,82 @@ LaTeX Font Info:    Trying to load font information for T1+ptm on input line 11
 (c:/texlive/2024/texmf-dist/tex/latex/psnfss/t1ptm.fd
 File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
 ))
-(c:/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-xetex.def
+(c:/texlive/2024/texmf-dist/tex/latex/natbib/natbib.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+
+
+Package natbib Warning: The `cite' package should not be used
+(natbib)                with natbib. Use option `sort' instead.
+
+\bibhang=\skip57
+\bibsep=\skip58
+LaTeX Info: Redefining \cite on input line 694.
+LaTeX Info: Redefining \citenum on input line 708.
+\c@NAT@ctr=\count289
+) (c:/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-xetex.def
 File: l3backend-xetex.def 2024-05-08 L3 backend support: XeTeX
-\g__graphics_track_int=\count289
+\g__graphics_track_int=\count290
 \l__pdf_internal_box=\box56
-\g__pdf_backend_annotation_int=\count290
-\g__pdf_backend_link_int=\count291
+\g__pdf_backend_annotation_int=\count291
+\g__pdf_backend_link_int=\count292
 )
 (./conference_101719.aux)
 \openout1 = `conference_101719.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 13.
-LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
 
 -- Lines per column: 56 (exact).
-Missing character: There is no – ("2013) in font ptmr8t!
 
 
 
-Underfull \hbox (badness 3108) in paragraph at lines 65--66
+Underfull \hbox (badness 3108) in paragraph at lines 67--68
 []\T1/ptm/m/n/10 Motivated by this in-sight, we build upon a strong
  []
 
+LaTeX Font Info:    Trying to load font information for U+msa on input line 71.
 
+(c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 71.
+
+
+(c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
 
 [1
 
 
 ]
-Underfull \hbox (badness 1424) in paragraph at lines 73--74
-[]\T1/ptm/m/n/10 We pro-pose a Joint-wise Adap-tive Tem-po-ral Smooth-
- []
-
-
 
 File: fig1.png Graphic file (type bmp)
 <fig1.png>
 
 
 [2]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 116
-.
- (c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 116
-.
-
-(c:/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
 
 
 
 [3]
 
 
-Overfull \hbox (8.22896pt too wide) in paragraph at lines 239--249
+Overfull \hbox (11.029pt too wide) in paragraph at lines 220--230
  [] 
  []
 
@@ -309,8 +314,23 @@ Overfull \hbox (8.22896pt too wide) in paragraph at lines 239--249
 [4]
 
 
+Underfull \hbox (badness 5231) in paragraph at lines 291--292
+[]\T1/ptm/m/n/10 Cheng Y, Yang B, Wang B, et al. Occlusion-
+ []
 
-[5]
+
+Underfull \hbox (badness 2103) in paragraph at lines 291--292
+\T1/ptm/m/n/10 aware net-works for 3d hu-man pose es-ti-ma-tion in
+ []
+
+Missing character: There is no “ ("201C) in font ptmr8t!
+Missing character: There is no ” ("201D) in font ptmr8t!
+Missing character: There is no – ("2013) in font ptmr8t!
+
+Underfull \hbox (badness 2626) in paragraph at lines 293--294
+\T1/ptm/m/n/10 on 3D Vi-sion (3DV), Feb. 2021, pp. 3241. doi:
+ []
+
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -324,11 +344,7 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-
-
-[6
-
-] (./conference_101719.aux)
+[5] (./conference_101719.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -339,12 +355,12 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 4081 strings out of 473839
- 62185 string characters out of 5733380
- 475600 words of memory out of 5000000
- 27112 multiletter control sequences out of 15000+600000
+ 4454 strings out of 473839
+ 66847 string characters out of 5733380
+ 481123 words of memory out of 5000000
+ 27481 multiletter control sequences out of 15000+600000
  640780 words of font info for 113 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 57i,9n,65p,2004b,298s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,9n,65p,1383b,298s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on conference_101719.pdf (6 pages).
+Output written on conference_101719.pdf (5 pages).
